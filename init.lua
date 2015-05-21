@@ -6,9 +6,9 @@ minetest.register_chatcommand("registerGroup", {
 	description = "Create a Citatest Group",
 	func = function(owner, param)
 		local tempName1 = string.lower(param)
-		local groupAmount = #groups + 1
-		for k, v in pairs(groups) do
-			local tempName2 = string.lower(groups[k].name)
+		local groupAmount = #ct_groups + 1
+		for k, v in pairs(ct_groups) do
+			local tempName2 = string.lower(ct_groups[k].name)
 			if tempName2 == tempName1 then
 				minetest.chat_send_all("Group " .. param .. " already exists!")
 				return 0
@@ -20,11 +20,11 @@ minetest.register_chatcommand("registerGroup", {
 			return 0
 		end
 		
-		groups[groupAmount] = Group.new()
-		groups[groupAmount].name = param
-		groups[groupAmount].owner = owner
+		ct_groups[groupAmount] = ct_Group.new()
+		ct_groups[groupAmount].name = param
+		ct_groups[groupAmount].owner = owner
 		minetest.chat_send_all("Player " .. owner .. " made the group " .. param .. "!")
-		groups[groupAmount]:addmember(owner)
+		ct_groups[groupAmount]:addmember(owner)
 	end
 })
 
@@ -36,18 +36,18 @@ minetest.register_chatcommand("transferOwnership", {
 		local found, _, groupName, newOwner = param:find("^([^%s]+)([^%s]+)%s+(.+)$")
 		if not found then return end
 
-		i = getGroup(groupName)
+		i = ct_getGroup(groupName)
 		if i == "NH" then
 			minetest.chat_send_all("Group " .. groupName .. " does not exist!")
 			return 0
 		end
 
-		if groups[i].owner == user then
-			groups[i]:addmember(newOwner)
-			groups[i].owner = newOwner
-			minetest.chat_send_all("Group " .. groups[i].name .." was transfered to Player " .. newOwner)
+		if ct_groups[i].owner == user then
+			ct_groups[i]:addmember(newOwner)
+			ct_groups[i].owner = newOwner
+			minetest.chat_send_all("Group " .. ct_groups[i].name .." was transfered to Player " .. newOwner)
 		else
-			minetest.chat_send_all("Player " .. user .. " tried to change the owner of " .. groups[i].name  .. "!")
+			minetest.chat_send_all("Player " .. user .. " tried to change the owner of " .. ct_groups[i].name  .. "!")
 		end
 	end
 })
@@ -60,16 +60,16 @@ minetest.register_chatcommand("addMember", {
 		local memberValue
 		local found, _, groupName, player = param:find("^([^%s]+)%s+(.+)$")
 		if not found then return end
-		i = getGroup(groupName)
+		i = ct_getGroup(groupName)
 		if i == "NH" then 
 			minetest.chat_send_all("Group " .. groupName .. " does not exist!")
 			return 0
 		end
-		memberValue = groups[i]:checkMember(name)
+		memberValue = ct_groups[i]:checkMember(name)
 		if memberValue == true then
-			memberValue = groups[i]:checkMember(player)
+			memberValue = ct_groups[i]:checkMember(player)
 			if memberValue == false then
-				groups[i]:addmember(player)
+				ct_groups[i]:addmember(player)
 				minetest.chat_send_all("Player " .. player .. " was added to group " .. groupName)
 			else
 				minetest.chat_send_all("Player " .. player .. " is already a member")
@@ -89,17 +89,17 @@ minetest.register_chatcommand("removeMember", {
 		local found, _, groupName, player = param:find("^([^%s]+)%s+(.+)$")
 		if not found then return end
 		
-		i = getGroup(groupName)
+		i = ct_getGroup(groupName)
 		if i == "NH" then
 			minetest.chat_send_all("Group " .. groupName .. " does not exist!")
 			return 0
 		end
 
-		memberValue = groups[i]:checkMember(name)
+		memberValue = ct_groups[i]:checkMember(name)
 		if memberValue == true then
-			memberValue = groups[i]:checkMember(player)
+			memberValue = ct_groups[i]:checkMember(player)
 			if memberValue == true then
-				groups[i]:removeMember(player)
+				ct_groups[i]:removeMember(player)
 				minetest.chat_send_all("Player " .. player .. " was successfully removed from group " .. groupName)
 			else
 				minetest.chat_send_all("Player " .. player .. " is not a member")
@@ -118,17 +118,17 @@ minetest.register_chatcommand("disbandGroup", {
 		local memberValue
 		local found, _, groupName, reason = param:find("^([^%s]+)%s+(.+)$")
 		if not found then return end
-		groupValue = getGroup(groupName)
+		groupValue = ct_getGroup(groupName)
 		if groupValue == false then
 			minetest.chat_send_all("Group " .. groupName .. " does not exist!")
 			return 0
 		end
 		
-		memberValue = groups[groupValue]:checkMember(user)
+		memberValue = ct_groups[groupValue]:checkMember(user)
 		if memberValue == true then
-			if groups[groupValue].owner == user then
+			if ct_groups[groupValue].owner == user then
 				minetest.chat_send_all("Group " .. groupName .. " was disbanded by " .. user .. " because: " .. reason)
-				table.remove(groups, groupValue)
+				table.remove(ct_groups, groupValue)
 			else
 				minetest.chat_send_all("Player " .. user .. " tried to illegally disband group " .. groupName .. "!")
 			end
@@ -146,16 +146,16 @@ minetest.register_chatcommand("renameGroup", {
 		local memberValue
 		local found, _, oldGroupName, newName = param:find("^([^%s]+)%s+(.+)$")
 		if not found then return end
-		groupValue = getGroup(OldGroupName)
+		groupValue = ct_getGroup(OldGroupName)
 		if groupValue == false then
 			minetest.chat_send_all("Group " .. oldGroupName .. " does not exist!")
 			return 0
 		end
 		
-		memberValue = groups[groupValue]:checkMember(user)
+		memberValue = ct_groups[groupValue]:checkMember(user)
 		if memberValue == true then
-			if groups[groupValue].owner == user then
-				groups[groupValue].name = newName
+			if ct_groups[groupValue].owner == user then
+				ct_groups[groupValue].name = newName
 				minetest.chat_sen_all("Group " .. oldGroupName .. " was renamed too " .. newName .. "!")
 			else
 				minetest.chat_send_all("Player " .. user .. " tried to illegally rename group " .. oldGroupName .. "!")
@@ -175,17 +175,17 @@ minetest.register_chatcommand("splitGroup", {
 		local found, _, oldGroup, splitGroup = param:find("^([^%s]+)%s+(.+)$")
 		if not found then return end
 		
-		groupValue = getGroup(OldGroup)			
+		groupValue = ct_getGroup(OldGroup)			
 		if groupValue == false then
 			minetest.chat_send_all("Group " .. oldGroup .. " does not exist!")
 			return 0
 		end
 		
-		memberValue = groups[groupValue]:checkMember(user)
+		memberValue = ct_groups[groupValue]:checkMember(user)
 		if memberValue == true then
 		
-			for k, v in pairs(groups) do
-				local tempName2 = string.lower(groups[k].name)
+			for k, v in pairs(ct_groups) do
+				local tempName2 = string.lower(ct_groups[k].name)
 				print(tempName2 .."k")
 				if tempName2 == tempName1 then
 					minetest.chat_send_all("Group " .. param .. " already exists!")
@@ -193,11 +193,11 @@ minetest.register_chatcommand("splitGroup", {
 				end
 			end
 
-			groups[groupAmount] = makeNewGroup()
-			groups[groupAmount].name = param
-			groups[groupAmount].owner = user
+			ct_groups[groupAmount] = ct_Group.new()
+			ct_groups[groupAmount].name = param
+			ct_groups[groupAmount].owner = user
 			minetest.chat_send_all("Group " .. newGroup .. " was split from " .. oldGroup .. "!")
-			groups[groupAmount]:addMember(user)
+			ct_groups[groupAmount]:addMember(user)
 		else
 			minetest.chat_send_all("Player " .. user .. " tried to illegally split from group " .. oldGroupName .. "!")
 		end
