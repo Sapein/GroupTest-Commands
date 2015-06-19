@@ -1,14 +1,12 @@
---The func function is what is executed upon the commannd being entered. 
---First Param is the Name, second is input
 
-minetest.register_chatcommand("registerGroup", {
+minetest.register_chatcommand("gtregisterGroup", { 
 	params = "<Group Name>",
-	description = "Create a Citatest Group",
+	description = "Create a GroupTest Group",
 	func = function(owner, param)
 		local tempName1 = string.lower(param)
-		local groupAmount = #ct_groups + 1
-		for k, v in pairs(ct_groups) do
-			local tempName2 = string.lower(ct_groups[k].name)
+		local groupAmount = #gt_groups + 1
+		for k, v in pairs(gt_groups) do
+			local tempName2 = string.lower(gt_groups[k].name)
 			if tempName2 == tempName1 then
 				minetest.chat_send_all("Group " .. param .. " already exists!")
 				return 0
@@ -20,56 +18,56 @@ minetest.register_chatcommand("registerGroup", {
 			return 0
 		end
 		
-		ct_groups[groupAmount] = ct_Group.new()
-		ct_groups[groupAmount].name = param
-		ct_groups[groupAmount].owner = owner
+		gt_groups[groupAmount] = gt_Group.new()
+		gt_groups[groupAmount].name = param
+		gt_groups[groupAmount].owner = owner
 		minetest.chat_send_all("Player " .. owner .. " made the group " .. param .. "!")
-		ct_groups[groupAmount]:addmember(owner)
+		gt_groups[groupAmount]:addmember(owner)
 	end
 })
 
-minetest.register_chatcommand("transferOwnership", {
+minetest.register_chatcommand("gttransferOwnership", {
 	params = "<Group Name> <New Owner>",
-	description = "Transfer Ownership of a Citatest Group",
+	description = "Transfer Ownership of a GroupTest Group",
 	func = function(user, param)
 		local i
 		local found, _, groupName, newOwner = param:find("^([^%s]+)([^%s]+)%s+(.+)$")
 		if not found then return end
 
-		i = ct_getGroup(groupName)
+		i = gt_getGroup(groupName)
 		if i == "NH" then
 			minetest.chat_send_all("Group " .. groupName .. " does not exist!")
 			return 0
 		end
 
-		if ct_groups[i].owner == user then
-			ct_groups[i]:addmember(newOwner)
-			ct_groups[i].owner = newOwner
-			minetest.chat_send_all("Group " .. ct_groups[i].name .." was transfered to Player " .. newOwner)
+		if gt_groups[i].owner == user then
+			gt_groups[i]:addmember(newOwner)
+			gt_groups[i].owner = newOwner
+			minetest.chat_send_all("Group " .. gt_groups[i].name .." was transfered to Player " .. newOwner)
 		else
-			minetest.chat_send_all("Player " .. user .. " tried to change the owner of " .. ct_groups[i].name  .. "!")
+			minetest.chat_send_all("Player " .. user .. " tried to change the owner of " .. gt_groups[i].name  .. "!")
 		end
 	end
 })
 
-minetest.register_chatcommand("addMember", {
+minetest.register_chatcommand("gtaddMember", {
 	params = "<Group name> <Member Name>",
-	description = "Add a member to a specified group",
+	description = "Add a member to a specified GroupTest group",
 	func = function(name, param)
 		local i
 		local memberValue
 		local found, _, groupName, player = param:find("^([^%s]+)%s+(.+)$")
 		if not found then return end
-		i = ct_getGroup(groupName)
+		i = gt_getGroup(groupName)
 		if i == "NH" then 
 			minetest.chat_send_all("Group " .. groupName .. " does not exist!")
 			return 0
 		end
-		memberValue = ct_groups[i]:checkMember(name)
+		memberValue = gt_groups[i]:checkMember(name)
 		if memberValue == true then
-			memberValue = ct_groups[i]:checkMember(player)
+			memberValue = gt_groups[i]:checkMember(player)
 			if memberValue == false then
-				ct_groups[i]:addmember(player)
+				gt_groups[i]:addmember(player)
 				minetest.chat_send_all("Player " .. player .. " was added to group " .. groupName)
 			else
 				minetest.chat_send_all("Player " .. player .. " is already a member")
@@ -80,26 +78,26 @@ minetest.register_chatcommand("addMember", {
 	end
 })
 
-minetest.register_chatcommand("removeMember", {
+minetest.register_chatcommand("gtremoveMember", {
 	params = "<Group Name> <Member Name>",
-	decription = "Remove a member from a specified group",
+	decription = "Remove a member from a specified GroupTest group",
 	func = function(name, param)
 		local i
 		local memberValue
 		local found, _, groupName, player = param:find("^([^%s]+)%s+(.+)$")
 		if not found then return end
 		
-		i = ct_getGroup(groupName)
+		i = gt_getGroup(groupName)
 		if i == "NH" then
 			minetest.chat_send_all("Group " .. groupName .. " does not exist!")
 			return 0
 		end
 
-		memberValue = ct_groups[i]:checkMember(name)
+		memberValue = gt_groups[i]:checkMember(name)
 		if memberValue == true then
-			memberValue = ct_groups[i]:checkMember(player)
+			memberValue = gt_groups[i]:checkMember(player)
 			if memberValue == true then
-				ct_groups[i]:removeMember(player)
+				gt_groups[i]:removeMember(player)
 				minetest.chat_send_all("Player " .. player .. " was successfully removed from group " .. groupName)
 			else
 				minetest.chat_send_all("Player " .. player .. " is not a member")
@@ -110,25 +108,25 @@ minetest.register_chatcommand("removeMember", {
 	end
 })
 
-minetest.register_chatcommand("disbandGroup", {
+minetest.register_chatcommand("gtdisbandGroup", {
 	params = "<Group Name> <Reason>",
-	description = "Disband a Group you own.",
+	description = "Disband a group that you own.",
 	func = function(user, param)
 		local groupValue
 		local memberValue
 		local found, _, groupName, reason = param:find("^([^%s]+)%s+(.+)$")
 		if not found then return end
-		groupValue = ct_getGroup(groupName)
+		groupValue = gt_getGroup(groupName)
 		if groupValue == false then
 			minetest.chat_send_all("Group " .. groupName .. " does not exist!")
 			return 0
 		end
 		
-		memberValue = ct_groups[groupValue]:checkMember(user)
+		memberValue = gt_groups[groupValue]:checkMember(user)
 		if memberValue == true then
-			if ct_groups[groupValue].owner == user then
+			if gt_groups[groupValue].owner == user then
 				minetest.chat_send_all("Group " .. groupName .. " was disbanded by " .. user .. " because: " .. reason)
-				table.remove(ct_groups, groupValue)
+				table.remove(gt_groups, groupValue)
 			else
 				minetest.chat_send_all("Player " .. user .. " tried to illegally disband group " .. groupName .. "!")
 			end
@@ -138,7 +136,7 @@ minetest.register_chatcommand("disbandGroup", {
 	end
 })
 
-minetest.register_chatcommand("renameGroup", {
+minetest.register_chatcommand("gtrenameGroup", {
 	params = "<Group Name> <New Name>",
 	description = "Rename a group you own.",
 	func = function(user, param)
@@ -146,16 +144,16 @@ minetest.register_chatcommand("renameGroup", {
 		local memberValue
 		local found, _, oldGroupName, newName = param:find("^([^%s]+)%s+(.+)$")
 		if not found then return end
-		groupValue = ct_getGroup(OldGroupName)
+		groupValue = gt_getGroup(OldGroupName)
 		if groupValue == false then
 			minetest.chat_send_all("Group " .. oldGroupName .. " does not exist!")
 			return 0
 		end
 		
-		memberValue = ct_groups[groupValue]:checkMember(user)
+		memberValue = gt_groups[groupValue]:checkMember(user)
 		if memberValue == true then
-			if ct_groups[groupValue].owner == user then
-				ct_groups[groupValue].name = newName
+			if gt_groups[groupValue].owner == user then
+				gt_groups[groupValue].name = newName
 				minetest.chat_sen_all("Group " .. oldGroupName .. " was renamed too " .. newName .. "!")
 			else
 				minetest.chat_send_all("Player " .. user .. " tried to illegally rename group " .. oldGroupName .. "!")
@@ -166,7 +164,7 @@ minetest.register_chatcommand("renameGroup", {
 	end
 })
 
-minetest.register_chatcommand("splitGroup", {
+minetest.register_chatcommand("gtsplitGroup", {
 	params = "<Original Group Name> <New Group Name>",
 	description = "This allows any user to split a group from an original one.",
 	func = function(user, param)
@@ -175,17 +173,17 @@ minetest.register_chatcommand("splitGroup", {
 		local found, _, oldGroup, splitGroup = param:find("^([^%s]+)%s+(.+)$")
 		if not found then return end
 		
-		groupValue = ct_getGroup(OldGroup)			
+		groupValue = gt_getGroup(OldGroup)			
 		if groupValue == false then
 			minetest.chat_send_all("Group " .. oldGroup .. " does not exist!")
 			return 0
 		end
 		
-		memberValue = ct_groups[groupValue]:checkMember(user)
+		memberValue = gt_groups[groupValue]:checkMember(user)
 		if memberValue == true then
 		
-			for k, v in pairs(ct_groups) do
-				local tempName2 = string.lower(ct_groups[k].name)
+			for k, v in pairs(gt_groups) do
+				local tempName2 = string.lower(gt_groups[k].name)
 				print(tempName2 .."k")
 				if tempName2 == tempName1 then
 					minetest.chat_send_all("Group " .. param .. " already exists!")
@@ -193,27 +191,27 @@ minetest.register_chatcommand("splitGroup", {
 				end
 			end
 
-			ct_groups[groupAmount] = ct_Group.new()
-			ct_groups[groupAmount].name = param
-			ct_groups[groupAmount].owner = user
+			gt_groups[groupAmount] = gt_Group.new()
+			gt_groups[groupAmount].name = param
+			gt_groups[groupAmount].owner = user
 			minetest.chat_send_all("Group " .. newGroup .. " was split from " .. oldGroup .. "!")
-			ct_groups[groupAmount]:addMember(user)
+			gt_groups[groupAmount]:addMember(user)
 		else
 			minetest.chat_send_all("Player " .. user .. " tried to illegally split from group " .. oldGroupName .. "!")
 		end
 	end
 })
 
-minetest.register_chatcommand("announce", {
+minetest.register_chatcommand("gtannounce", {
 	params = "<Group Name> <Message>",
-	description = "Announce something to all members of the group.",
+	description = "Announce something to all members of the specified GroupTest Group.",
 	func = function(user, param)
 		local groupNumber 
 		local isMember
 		local found, _, groupName, message = param:find("^([^%s]+)%s+(.+)$")
 		if not found then return end
 		
-		groupNumber = getGroup(groupName)
+		groupNumber = gt_getGroup(groupName)
 		if groupNumber == false then
 			minetest.chat_send_all("Group " .. groupName .. " does not exist!")
 			return 0
